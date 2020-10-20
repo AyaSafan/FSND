@@ -74,6 +74,32 @@
 		{% endfor %}
 	</div>
 </section>
+<section>
+	<h3>
+		<a href="/venues/{{ venue.id }}/edit"><button class="btn btn-default">Edit venue</button></a>
+		<button class="btn btn-default" id='delete-button' data-id="{{ venue.id }}">Delete venue</button>
+	</h3>
+</section>
+
+<script>
+	const deleteBtn = document.getElementById('delete-button');
+	deleteBtn.onclick = function(e) {
+		const venue_id = e.target.dataset['id'];
+		fetch('/venues/' + venue_id, {
+		  method: 'DELETE'
+		})	  
+	  .then(response => response.json())
+      .then(jsonResponse => {
+		  if (jsonResponse.success){
+			alert(`Venue ID: (${venue_id}) deleted successfully.`);
+			window.location.href = jsonResponse.url;
+			}
+		  else{
+			  alert('Error in vene delete.')
+		  }
+		})
+	}
+</script>
 
 {% endblock %}
 

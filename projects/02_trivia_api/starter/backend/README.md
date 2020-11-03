@@ -294,7 +294,7 @@ curl --location --request POST 'http://127.0.0.1:5000/questions/search' \
 
 ```
 
-### GET /categories/<int:category_id>/questions'
+### GET /categories/<int:category_id>/questions
 * General
 
 	- Fetchs questions based on category. 

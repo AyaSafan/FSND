@@ -56,7 +56,7 @@ class Venue(db.Model):
 
 
     def __repr__(self):
-        return f'({self.id}) {self.name}'
+        return f'<({self.id}) {self.name}>'
 
     
 
@@ -82,7 +82,7 @@ class Artist(db.Model):
     shows = db.relationship('Show', backref = 'artist', lazy = True , cascade="all, delete-orphan" )
 
     def __repr__(self):
-        return f'({self.id}) {self.name}'
+        return f'<({self.id}) {self.name}>'
 
    
 
@@ -93,7 +93,7 @@ class Show(db.Model):
     venue_id = db.Column(db.Integer, db.ForeignKey("Venue.id"), nullable = False)      
     start_time = db.Column(db.DateTime, default=datetime.utcnow , nullable = False)
     def __repr__(self):
-        return f'({self.id}) Artist:({self.artist_id}), Venue:({self.venue_id})'
+        return f'<({self.id}) Artist:({self.artist_id}), Venue:({self.venue_id})>'
 
 #----------------------------------------------------------------------------#
 # Filters.
@@ -192,31 +192,48 @@ def show_venue(venue_id):
       flash('Venue ID: ' + (str(venue_id)) + ' does not exist.')        
       return redirect(url_for('index'))
 
-
-        
+     
     upcoming_shows_count = 0   
     upcoming_shows = []
     past_shows_count = 0
     past_shows = []
     now = datetime.now()
-    for show in venue.shows:
-        if show.start_time >= now:
-          upcoming_shows_count += 1
-          upcoming_shows.append({
-                    "artist_id": show.artist_id,
-                    "artist_name": show.artist.name,
-                    "artist_image_link": show.artist.image_link,
-                    "start_time": format_datetime(str(show.start_time))
-          })
-        elif show.start_time < now:
-          past_shows_count += 1
-          past_shows.append({
-                    "artist_id": show.artist_id,
-                    "artist_name": show.artist.name,
-                    "artist_image_link": show.artist.image_link,
-                    "start_time": format_datetime(str(show.start_time))
-          })
 
+    past_shows_objs = db.session.query(Artist, Show).join(Show).join(Venue).\
+    filter(
+    Show.venue_id == venue_id,
+    Show.artist_id == Artist.id,
+    Show.start_time < now
+    ). all()
+
+
+    for obj in past_shows_objs:
+      past_shows_count += 1
+      past_shows.append({
+                      "artist_id":  obj[1].artist_id,
+                      "artist_name":  obj[0].name,
+                      "artist_image_link":  obj[0].image_link,
+                      "start_time": format_datetime(str( obj[1].start_time))
+        })
+
+    upcoming_shows_objs = db.session.query(Artist, Show).join(Show).join(Venue).\
+    filter(
+    Show.venue_id == venue_id,
+    Show.artist_id == Artist.id,
+    Show.start_time >= now
+    ). all()
+
+    for obj in upcoming_shows_objs:
+      upcoming_shows_count += 1
+      upcoming_shows.append({
+                      "artist_id":  obj[1].artist_id,
+                      "artist_name":  obj[0].name,
+                      "artist_image_link":  obj[0].image_link,
+                      "start_time": format_datetime(str( obj[1].start_time))
+        })
+
+        
+    
     venue.genres = venue.genres.split(',')
     venue.phone = (venue.phone[:3] + '-' + venue.phone[3:6] + '-' + venue.phone[6:])
     venue.upcoming_shows_count = upcoming_shows_count
@@ -342,31 +359,45 @@ def show_artist(artist_id):
     flash('Artist ID: ' + (str(artist_id)) + ' does not exist.')        
     return redirect(url_for('index'))
 
-
-
+ 
   upcoming_shows_count = 0   
   upcoming_shows = []
   past_shows_count = 0
   past_shows = []
   now = datetime.now()
 
-  for show in artist.shows:
-      if show.start_time >= now:
-        upcoming_shows_count += 1
-        upcoming_shows.append({
-                    "venue_id": show.venue_id,
-                    "venue_name": show.venue.name,
-                    "venue_image_link": show.venue.image_link,
-                    "start_time": format_datetime(str(show.start_time))
-          })
-      elif show.start_time < now:
-        past_shows_count += 1
-        past_shows.append({
-                    "venue_id": show.venue_id,
-                    "venue_name": show.venue.name,
-                    "venue_image_link": show.venue.image_link,
-                    "start_time": format_datetime(str(show.start_time))
-          })
+  past_shows_objs = db.session.query(Venue, Show).join(Show).join(Artist).\
+  filter(
+  Show.venue_id == Venue.id,
+  Show.artist_id == artist_id,
+  Show.start_time < now
+  ). all()
+
+
+  for obj in past_shows_objs:
+    past_shows_count += 1
+    past_shows.append({
+                    "venue_id": obj[1].venue_id,
+                    "venue_name": obj[0].name,
+                    "venue_image_link": obj[0].image_link,
+                    "start_time": format_datetime(str(obj[1].start_time))
+      })
+
+  upcoming_shows_objs = db.session.query(Venue, Show).join(Show).join(Artist).\
+  filter(
+  Show.venue_id == Venue.id,
+  Show.artist_id == artist_id,
+  Show.start_time >= now
+  ). all()
+
+  for obj in upcoming_shows_objs:
+    upcoming_shows_count += 1
+    upcoming_shows.append({
+                    "venue_id": obj[1].venue_id,
+                    "venue_name": obj[0].name,
+                    "venue_image_link": obj[0].image_link,
+                    "start_time": format_datetime(str(obj[1].start_time))
+      })
 
   artist.genres = artist.genres.split(',')
   artist.phone = (artist.phone[:3] + '-' + artist.phone[3:6] + '-' + artist.phone[6:])

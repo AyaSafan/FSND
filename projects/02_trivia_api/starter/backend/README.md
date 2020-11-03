@@ -67,7 +67,7 @@ One note before you delve into your tasks: for each endpoint you are expected to
 9. Create error handlers for all expected errors including 400, 404, 422 and 500. 
 
 REVIEW_COMMENT
-```
+
 This README is missing documentation of your endpoints. Below is an example for your endpoint to get all categories. Please use it as a reference for creating your documentation and resubmit your code. 
 
 Endpoints
@@ -76,20 +76,310 @@ GET ...
 POST ...
 DELETE ...
 
-GET '/categories'
-- Fetches a dictionary of categories in which the keys are the ids and the value is the corresponding string of the category
-- Request Arguments: None
-- Returns: An object with a single key, categories, that contains a object of id: category_string key:value pairs. 
-{'1' : "Science",
-'2' : "Art",
-'3' : "Geography",
-'4' : "History",
-'5' : "Entertainment",
-'6' : "Sports"}
+## Error Handeling
+Errors are returned as JSON oblects in the following format:
+```
+{
+	"success": False, 
+	"error": 400,
+	"message": "Bad request"
+}
+```
+
+The API will return four error types when te request fails:
+* 400: Bad Request
+* 404: Not Fount
+* 422: unprocessable
+* 500: Internal Server Error
+
+
+## Endpoints
+### GET /categories
+* General
+
+	- Fetches a dictionary of categories in which the keys are the ids and the value is the corresponding string of the category
+	- Request Arguments: None
+	- Returns: An object with a single key, categories, that contains a object of id: category_string key:value pairs. 
+
+* Example
+```
+curl --location --request GET 'http://127.0.0.1:5000/categories'
+```
+* Response
+
+```
+{
+	'1' : "Science",
+	'2' : "Art",
+	'3' : "Geography",
+	'4' : "History",
+	'5' : "Entertainment",
+	'6' : "Sports"
+}
 
 ```
 
+### GET /questions?page=<int:number>
+* General
 
+	- Fetches a paginated dictionary of questions from all categories
+	- Request Arguments: None
+	- Returns: An object containing a list of questions, number of total questions, current category, categories. 
+
+* Example
+```
+curl --location --request GET 'http://127.0.0.1:5000/questions?page=2'
+```
+* Response
+
+```
+{
+  "categories": {
+    "1": "Science", 
+    "2": "Art", 
+    "3": "Geography", 
+    "4": "History", 
+    "5": "Entertainment", 
+    "6": "Sports"
+  }, 
+  "current_category": null, 
+  "questions": [
+    {
+      "answer": "Agra", 
+      "category": 3, 
+      "difficulty": 2, 
+      "id": 15, 
+      "question": "The Taj Mahal is located in which Indian city?"
+    }, 
+    {
+      "answer": "Escher", 
+      "category": 2, 
+      "difficulty": 1, 
+      "id": 16, 
+      "question": "Which Dutch graphic artist\u2013initials M C was a creator of optical illusions?"
+    }, 
+    {
+      "answer": "Mona Lisa", 
+      "category": 2, 
+      "difficulty": 3, 
+      "id": 17, 
+      "question": "La Giaconda is better known as what?"
+    }, 
+    {
+      "answer": "One", 
+      "category": 2, 
+      "difficulty": 4, 
+      "id": 18, 
+      "question": "How many paintings did Van Gogh sell in his lifetime?"
+    }, 
+    {
+      "answer": "Jackson Pollock", 
+      "category": 2, 
+      "difficulty": 2, 
+      "id": 19, 
+      "question": "Which American artist was a pioneer of Abstract Expressionism, and a leading exponent of action painting?"
+    }, 
+    {
+      "answer": "The Liver", 
+      "category": 1, 
+      "difficulty": 4, 
+      "id": 20, 
+      "question": "What is the heaviest organ in the human body?"
+    }, 
+    {
+      "answer": "Alexander Fleming", 
+      "category": 1, 
+      "difficulty": 3, 
+      "id": 21, 
+      "question": "Who discovered penicillin?"
+    }, 
+    {
+      "answer": "Blood", 
+      "category": 1, 
+      "difficulty": 4, 
+      "id": 22, 
+      "question": "Hematology is a branch of medicine involving the study of what?"
+    }, 
+    {
+      "answer": "Scarab", 
+      "category": 4, 
+      "difficulty": 4, 
+      "id": 23, 
+      "question": "Which dung beetle was worshipped by the ancient Egyptians?"
+    }
+  ], 
+  "success": true, 
+  "total_questions": 19
+}
+
+```
+### DELETE /questions/<question_id>
+* General
+
+	- Deletes an existing question 
+	- Request Arguments: int:question_id
+	- Returns: An object containing success boolean value and deleted question id.
+
+* Example
+```
+curl --location --request DELETE 'http://127.0.0.1:5000/questions/2'
+```
+* Response
+
+
+```
+{
+	'success': True,
+	'deleted': 2 
+}
+
+```
+
+### POST /questions
+* General
+
+	- Creates a new question 
+	- Request Arguments: {"question":string, "answer":string, "difficulty":int, "category":string}
+	- Returns: An object containing success boolean value and created question id.
+
+* Example
+
+```
+curl --location --request POST 'http://127.0.0.1:5000/questions' \
+--header 'Content-Type: application/json' \
+--data-raw '{  "question": "new question",  "answer": "answer", "difficulty": 1, "category": 1  }'
+```
+* Response
+
+```
+{
+	'success': True,
+	'created': 24 
+}
+
+```
+
+### POST /questions/search
+* General
+
+	- Fetchs questions based on a search term. It returns any questions for whom the search term is a substring of the question. 
+	- Request Arguments: {"searchTerm":string}
+	- Returns: An object containing success boolean value, a list of questions, number of total questions, and current category. 
+
+
+* Example
+
+```
+curl --location --request POST 'http://127.0.0.1:5000/questions/search' \
+--header 'Content-Type: application/json' \
+--data-raw '{"searchTerm":"tom"}'
+```
+* Response
+
+```
+{
+    "current_category": null,
+    "questions": [
+        {
+            "answer": "Apollo 13",
+            "category": 5,
+            "difficulty": 4,
+            "id": 2,
+            "question": "What movie earned Tom Hanks his third straight Oscar nomination, in 1996?"
+        }
+    ],
+    "success": true,
+    "total_questions": 1
+}
+
+```
+
+### GET /categories/<int:category_id>/questions'
+* General
+
+	- Fetchs questions based on category. 
+	- Request Arguments: int:category_id
+	- Returns: An object containing success boolean value, a list of questions, number of total questions, and current category. 
+	
+* Example
+```
+curl --location --request GET 'http://127.0.0.1:5000/categories/2/questions'
+```
+*Response
+
+```
+{
+  "current_category": {
+    "id": 2, 
+    "type": "Art"
+  }, 
+  "questions": [
+    {
+      "answer": "Escher", 
+      "category": 2, 
+      "difficulty": 1, 
+      "id": 16, 
+      "question": "Which Dutch graphic artist\u2013initials M C was a creator of optical illusions?"
+    }, 
+    {
+      "answer": "Mona Lisa", 
+      "category": 2, 
+      "difficulty": 3, 
+      "id": 17, 
+      "question": "La Giaconda is better known as what?"
+    }, 
+    {
+      "answer": "One", 
+      "category": 2, 
+      "difficulty": 4, 
+      "id": 18, 
+      "question": "How many paintings did Van Gogh sell in his lifetime?"
+    }, 
+    {
+      "answer": "Jackson Pollock", 
+      "category": 2, 
+      "difficulty": 2, 
+      "id": 19, 
+      "question": "Which American artist was a pioneer of Abstract Expressionism, and a leading exponent of action painting?"
+    }
+  ], 
+  "success": true, 
+  "total_questions": 4
+}
+
+```
+
+### POST /quizzes
+* General
+
+	- Fetchs uestions to play the quiz. It takes category and previous question parameters and return a random questions within the given category, if provided, and that is not one of the previous questions.  
+	- Request Arguments: {"previous_questions": [], "quiz_category": {"id":int, "type":string}}
+	- Returns: An object containing success boolean value, and question object.
+
+* Example
+
+```
+curl --location --request POST 'http://127.0.0.1:5000/quizzes' \
+--header 'Content-Type: application/json' \
+--data-raw '{"quiz_category": {"id": 1, "type":"Science"}, "previous_questions":[]}'
+```
+
+* Response
+
+```
+{
+    "question": {
+        "answer": "Alexander Fleming",
+        "category": 1,
+        "difficulty": 3,
+        "id": 21,
+        "question": "Who discovered penicillin?"
+    },
+    "success": true
+}
+
+
+```
 ## Testing
 To run the tests, run
 ```

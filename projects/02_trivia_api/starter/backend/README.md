@@ -213,7 +213,7 @@ curl --location --request GET 'http://127.0.0.1:5000/questions?page=2'
 }
 
 ```
-### DELETE /questions/<question_id>
+### DELETE /questions/<int:question_id>
 * General
 
 	- Deletes an existing question 
